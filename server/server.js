@@ -1,7 +1,8 @@
 require('./config/config');
 const express = require('express');
 const mongoose = require('mongoose');
-
+//paquete de node para resolver paths
+const path = require('path');
 
 const app = express();
 
@@ -16,6 +17,8 @@ app.use(bodyParser.json())
 // Llamar al index que contiene la configuracion de rutas
 app.use(require('./routes/index')); 
 
+// habilitar la carpeta public para que sea visible 
+app.use(express.static( path.resolve(__dirname, '../public') )); 
 
 mongoose.connect(process.env.URLDB,{useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false} ,(err, res) => {
 

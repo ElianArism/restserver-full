@@ -18,6 +18,14 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 //  Seed
 // ============================
     process.env.SEED = process.env.SEED || "este-es-el-seed-desarrollo" 
+
+// ============================
+//  Google Client ID
+// ============================
+process.env.CLIENT_ID = process.env.CLIENT_ID  || '644223079720-rqg48rk9evjugcsl3nh1oot2f19ea17q.apps.googleusercontent.com';
+
+
+
 // ============================
 //  Base de datos
 // ============================
@@ -29,3 +37,4 @@ if (process.env.NODE_ENV === 'dev') {
     urlDB = process.env.MONGO_URI;
 }
 process.env.URLDB = urlDB;
+
