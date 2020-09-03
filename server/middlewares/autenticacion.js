@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 let verificaToken = ( req, res, next ) => {
 
     //Obtener el token que viene en el header de la request
-    let token = req.get('token');
+    let token = req.query.token ? req.query.token : req.get('token');
 
     //Verificar token 
     jwt.verify(token, process.env.SEED, (err, decoded_information) => { 
@@ -49,7 +49,9 @@ let verificarAdminRole = function( req, res, next ) {
 }
 
 
+
+
 module.exports = {
     verificaToken, 
-    verificarAdminRole
+    verificarAdminRole,
 }
