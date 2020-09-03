@@ -19,12 +19,11 @@ app.get('/categoria', verificaToken ,(req, res) =>  {
         .exec((err, categorias) => { 
             if(err) return res.status(500).json({ ok: false, err }); 
             if(categorias) return res.json({ ok: true, categorias});
-
         });        
 }); 
 
 //Mostrar una categoria x id 
-app.get('/categoria/:id', (req, res) => {
+app.get('/categoria/:id', verificaToken, (req, res) => {
     let id = req.params.id; 
 
     Categoria.findById(id, (err, categoriaBD) => { 
@@ -35,6 +34,7 @@ app.get('/categoria/:id', (req, res) => {
         if(categoriaBD) return res.json({ ok: true, categoriaBD});        
     });
 }); 
+
 
 //Crear categoria
 app.post('/categoria', [verificaToken], (req, res) => { 
@@ -58,7 +58,7 @@ app.post('/categoria', [verificaToken], (req, res) => {
 }); 
 
 //Actualizar Categoria 
-app.put('/categoria/:id', [verificaToken, verificaToken], (req, res) => { 
+app.put('/categoria/:id', verificaToken, (req, res) => { 
     let id = req.params.id; 
     let data = req.body; 
     
@@ -75,7 +75,7 @@ app.put('/categoria/:id', [verificaToken, verificaToken], (req, res) => {
 
 
 //Borrar categoria 
-app.delete('/categoria/:id', [verificaToken, verificaToken] ,(req, res) => {
+app.delete('/categoria/:id', verificaToken ,(req, res) => {
     let id = req.params.id;
 
     Categoria.findByIdAndRemove(id, (err, categoriaBorrada) => {

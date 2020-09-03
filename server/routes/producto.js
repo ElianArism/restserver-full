@@ -1,8 +1,8 @@
 const express = require('express'); 
-const { verificaToken } = require('../middlewares/autenticacion'); 
+const { verificaToken, verificarAdminRole } = require('../middlewares/autenticacion'); 
 let app = express(); 
 let Producto = require('../models/producto');
-const producto = require('../models/producto');
+
 
 
 //Obtener productos 
@@ -11,8 +11,8 @@ app.get('/productos', verificaToken ,(req, res) => {
     let hasta = Number(req.query.hasta) || 15;
 
     Producto.find({})
-        .sort('nombre')
-        .populate('usuario categoria', 'nombre email descripcion')
+        .populate('usuario', 'nombre email')
+        .populate('categoria', 'nombre')
         .skip(desde) 
         .limit(hasta)
         .exec((err, productos) => {
@@ -26,8 +26,31 @@ app.get('/productos', verificaToken ,(req, res) => {
 
 //producto x id 
 app.get('/productos/:id', (req, res) => {
-    //populate usuario categoria 
-    //paginado 
+    let id = req.params.id;
+    Producto.findById(id) 
+        .populate('usuario', 'nombre email')
+        .populate('categoria', 'nombre')
+        .exec((err, productoBD) => {
+            if(err) return res.status(500).json({ ok: false, err: { msg: 'Algo salio mal en el servidor', err } });
+            if(!productoBD) return res.status(400).json({ok: false, err: { msg: 'No se encontro un id que coincida', err}}); 
+            if(productoBD) return res.json({ ok: true, productoBD }); 
+        });
+
+});
+
+// Busqueda Producto 
+app.get('/productos/buscar/:termino', verificaToken, (req, res) => {
+    let termino = req.params.termino; 
+    //Expresion regular para encontrar texto de acuerdo a un patron (i para ignorar mayusculas y minusculas)
+    let regEx = new RegExp(termino, 'i'); 
+
+    Producto.find({ nombre: regEx })
+        .populate('categoria', 'nombre')
+        .exec((err, productos) => {
+            if(err) return res.status(500).json({ ok: false, err: { msg: 'Algo salio mal en el servidor', err } });
+            if(productos) return res.json({ ok: true, productos });    
+        });
+
 });
 
 //Cargar producto
@@ -35,12 +58,12 @@ app.post('/productos', verificaToken ,(req, res) => {
     let data = req.body; 
 
     let nuevoProducto = new Producto({
+        usuario: req.usuario._id, 
         nombre: data.nombre,
         descripcion: data.descripcion, 
         precioUni: data.precioUni,
         disponible: data.disponible,  
         categoria: data.categoria,
-        usuario: data.usuario 
     });
 
     
@@ -54,7 +77,7 @@ app.post('/productos', verificaToken ,(req, res) => {
 });
 
 // Actualizar producto por id
-app.put('/productos/:id', (req, res) => { 
+app.put('/productos/:id',[verificaToken, verificarAdminRole], (req, res) => { 
     let data = req.body; 
     let id = req.params.id; 
     
@@ -63,7 +86,6 @@ app.put('/productos/:id', (req, res) => {
         precioUni: data.precioUni, 
         descripcion: data.descripcion, 
         disponible: data.disponible || true, 
-        categoria: data.categoria, 
     }; 
 
     Producto.findByIdAndUpdate(id, producto, { new: true, runValidators: true }, (err, productoDB) => {
@@ -75,7 +97,7 @@ app.put('/productos/:id', (req, res) => {
 });
 
 //eliminar producto
-app.delete('/productos/:id', (req, res) => {
+app.delete('/productos/:id', [verificaToken, verificarAdminRole],(req, res) => {
     let id = req.params.id; 
 
     let desactivar = { disponible: false }
